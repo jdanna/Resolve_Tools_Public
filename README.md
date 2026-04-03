@@ -90,7 +90,7 @@ Fills the left and right sides of frame with a solid color.
 | Red / Green / Blue | 0.0 – 1.0 | 1 / 0 / 0 | Bar color |
 
 ### `JOESAT V3.dctl`
-Saturation and subtractive saturation tool with multi-format color space support. Decodes log to linear, converts to AP1 (ACES), applies HSV-based saturation adjustments, then re-encodes back to log.
+Saturation and subtractive saturation tool with multi-format color space support.
 
 <img width="415" height="175" alt="Screenshot 2026-04-02 at 10 27 19 PM" src="https://github.com/user-attachments/assets/4e996330-89ac-42d0-9067-fe3dfe6da194" />
 
