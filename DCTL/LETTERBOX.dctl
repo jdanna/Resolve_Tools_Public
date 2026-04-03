@@ -1,0 +1,16 @@
+DEFINE_UI_PARAMS(ratio, Ratio, DCTLUI_SLIDER_FLOAT, 2.35, 1.0, 5.0, 0.01)
+DEFINE_UI_PARAMS(r, Red, DCTLUI_SLIDER_FLOAT, 1, 0.0, 1.0, 0.1)
+DEFINE_UI_PARAMS(g, Green, DCTLUI_SLIDER_FLOAT, 0, 0.0, 1.0, 0.1)
+DEFINE_UI_PARAMS(b, Blue, DCTLUI_SLIDER_FLOAT, 0, 0.0, 1.0, 0.1)
+
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
+{  
+   float cropped_height = p_Width / ratio;
+   float letterbox_height = (p_Height - cropped_height) / 2 ;
+   int size = round(letterbox_height);
+   if ((p_Y < size) || (p_Y > p_Height-size)) {
+      return (make_float3(r, g, b));
+   } else {
+      return (make_float3(p_R, p_G, p_B));
+   }
+}

@@ -1,0 +1,370 @@
+// =============================================================================
+//  JOESAT V3.dctl
+//  Saturation and subtractive saturation tool with color space support
+// =============================================================================
+
+// Input / Output color space selector.
+DEFINE_UI_PARAMS(color_space, Color Space, DCTLUI_COMBO_BOX, 0, {CS_ACESCCT, CS_LOGC3, CS_CINEON, CS_DWG}, {ACEScct, ARRI LogC3, Cineon Log, DaVinci Intermediate})
+
+DEFINE_UI_PARAMS(slider2, Subsat, DCTLUI_SLIDER_FLOAT, 0, 0, .2, 0.1)
+DEFINE_UI_PARAMS(boost, Color Boost, DCTLUI_SLIDER_FLOAT, 1, 0, 2, 0.1)
+
+
+// ---------------------------------------------------------------------------
+// TRANSFER FUNCTIONS — log <-> scene-linear
+// ---------------------------------------------------------------------------
+
+// --- ACEScct (S-2014-003 / S-2016-001) ---
+
+__DEVICE__ float ACEScct_to_lin(float v) {
+    return (v <= 0.155251141552511f)
+        ? (v - 0.0729055341958355f) / 10.5402377416672f
+        : _powf(2.0f, v * 17.52f - 9.72f);
+}
+
+__DEVICE__ float lin_to_ACEScct(float v) {
+    return (v <= 0.0078125f)
+        ? 10.5402377416672f * v + 0.0729055341958355f
+        : (_log2f(_fmaxf(v, 1e-10f)) + 9.72f) / 17.52f;
+}
+
+// --- ARRI LogC3 (EI 800) ---
+// Source: ARRI "ALEXA LogC Curve Usage in VFX" whitepaper
+
+__DEVICE__ float LogC3_to_lin(float v) {
+    const float cut  = 0.010591f;
+    const float a    = 5.555556f;
+    const float b    = 0.052272f;
+    const float c    = 0.247190f;
+    const float d    = 0.385537f;
+    const float e    = 5.367655f;
+    const float f    = 0.092809f;
+    const float enc_cut = e * cut + f;  // ~0.149658
+
+    return (v > enc_cut)
+        ? (_powf(10.0f, (v - d) / c) - b) / a
+        : (v - f) / e;
+}
+
+__DEVICE__ float lin_to_LogC3(float v) {
+    const float cut  = 0.010591f;
+    const float a    = 5.555556f;
+    const float b    = 0.052272f;
+    const float c    = 0.247190f;
+    const float d    = 0.385537f;
+    const float e    = 5.367655f;
+    const float f    = 0.092809f;
+
+    return (v > cut)
+        ? c * _log10f(_fmaxf(a * v + b, 1e-10f)) + d
+        : e * v + f;
+}
+
+// --- Cineon Log (Kodak, code values normalised to [0,1]) ---
+// No published primaries — gamut is treated as pass-through.
+
+__DEVICE__ float Cineon_to_lin(float v) {
+    return _powf(10.0f, (v * 1023.0f - 685.0f) / 300.0f) * 0.18f;
+}
+
+__DEVICE__ float lin_to_Cineon(float v) {
+    return (_log10f(_fmaxf(v / 0.18f, 1e-10f)) * 300.0f + 685.0f) / 1023.0f;
+}
+
+// --- DaVinci Intermediate ---
+// Source: Blackmagic "DaVinci Resolve 17 Wide Gamut Intermediate" spec (Aug 2021)
+
+__DEVICE__ float DI_to_lin(float v) {
+    const float DI_A       = 0.0075f;
+    const float DI_B       = 7.0f;
+    const float DI_C       = 0.07329248f;
+    const float DI_M       = 10.44426855f;
+    const float DI_LOG_CUT = 0.02740668f;
+
+    return (v <= DI_LOG_CUT)
+        ? v / DI_M
+        : _powf(2.0f, v / DI_C - DI_B) - DI_A;
+}
+
+__DEVICE__ float lin_to_DI(float v) {
+    const float DI_A       = 0.0075f;
+    const float DI_B       = 7.0f;
+    const float DI_C       = 0.07329248f;
+    const float DI_M       = 10.44426855f;
+    const float DI_LIN_CUT = 0.00262409f;
+
+    return (v <= DI_LIN_CUT)
+        ? v * DI_M
+        : (_log2f(_fmaxf(v + DI_A, 1e-10f)) + DI_B) * DI_C;
+}
+
+
+// ---------------------------------------------------------------------------
+// GAMUT MATRICES — all via CIE XYZ as the connection space
+// ---------------------------------------------------------------------------
+
+// 3x3 multiply helper — row-major, float3 = column vector
+__DEVICE__ float3 mat33_mul(
+    float m00, float m01, float m02,
+    float m10, float m11, float m12,
+    float m20, float m21, float m22,
+    float3 v)
+{
+    return make_float3(
+        m00 * v.x + m01 * v.y + m02 * v.z,
+        m10 * v.x + m11 * v.y + m12 * v.z,
+        m20 * v.x + m21 * v.y + m22 * v.z
+    );
+}
+
+// ARRI Wide Gamut 3 (AWG3) -> AP1
+__DEVICE__ float3 AWG3_to_AP1(float3 v) {
+    float3 xyz = mat33_mul(
+         0.638008f,  0.214704f,  0.097744f,
+         0.291954f,  0.823841f, -0.115795f,
+         0.002798f, -0.067034f,  1.153294f,
+        v);
+    return mat33_mul(
+         1.64102338f, -0.32480329f, -0.23642470f,
+        -0.66366286f,  1.61533159f,  0.01675635f,
+         0.01172189f, -0.00828444f,  0.98839486f,
+        xyz);
+}
+
+// AP1 -> ARRI Wide Gamut 3
+__DEVICE__ float3 AP1_to_AWG3(float3 v) {
+    float3 xyz = mat33_mul(
+         0.66245418f,  0.13400421f,  0.15618769f,
+         0.27222872f,  0.67408177f,  0.05368952f,
+        -0.00557465f,  0.00406073f,  1.01033910f,
+        v);
+    return mat33_mul(
+         1.789066f, -0.482534f, -0.200076f,
+        -0.639849f,  1.396400f,  0.194432f,
+        -0.041532f,  0.082335f,  0.878868f,
+        xyz);
+}
+
+// DaVinci Wide Gamut (DWG) -> AP1
+__DEVICE__ float3 DWG_to_AP1(float3 v) {
+    float3 xyz = mat33_mul(
+         0.70062239f,  0.14877482f,  0.10105872f,
+         0.27411851f,  0.87363190f, -0.14775041f,
+        -0.09896291f, -0.13789533f,  1.32591599f,
+        v);
+    return mat33_mul(
+         1.64102338f, -0.32480329f, -0.23642470f,
+        -0.66366286f,  1.61533159f,  0.01675635f,
+         0.01172189f, -0.00828444f,  0.98839486f,
+        xyz);
+}
+
+// AP1 -> DaVinci Wide Gamut
+__DEVICE__ float3 AP1_to_DWG(float3 v) {
+    float3 xyz = mat33_mul(
+         0.66245418f,  0.13400421f,  0.15618769f,
+         0.27222872f,  0.67408177f,  0.05368952f,
+        -0.00557465f,  0.00406073f,  1.01033910f,
+        v);
+    return mat33_mul(
+         1.51667204f, -0.28147805f, -0.14696363f,
+        -0.46491710f,  1.25142378f,  0.17488461f,
+         0.06484905f,  0.10913934f,  0.76141462f,
+        xyz);
+}
+
+// Rec.709 (linear) -> AP1
+__DEVICE__ float3 Rec709_to_AP1(float3 v) {
+    float3 xyz = mat33_mul(
+         0.4124564f,  0.3575761f,  0.1804375f,
+         0.2126729f,  0.7151522f,  0.0721750f,
+         0.0193339f,  0.1191920f,  0.9503041f,
+        v);
+    return mat33_mul(
+         1.64102338f, -0.32480329f, -0.23642470f,
+        -0.66366286f,  1.61533159f,  0.01675635f,
+         0.01172189f, -0.00828444f,  0.98839486f,
+        xyz);
+}
+
+// AP1 -> Rec.709 (linear)
+__DEVICE__ float3 AP1_to_Rec709(float3 v) {
+    float3 xyz = mat33_mul(
+         0.66245418f,  0.13400421f,  0.15618769f,
+         0.27222872f,  0.67408177f,  0.05368952f,
+        -0.00557465f,  0.00406073f,  1.01033910f,
+        v);
+    return mat33_mul(
+         3.2404542f, -1.5371385f, -0.4985314f,
+        -0.9692660f,  1.8760108f,  0.0415560f,
+         0.0556434f, -0.2040259f,  1.0572252f,
+        xyz);
+}
+
+
+
+// ---------------------------------------------------------------------------
+// HSV HELPERS
+// ---------------------------------------------------------------------------
+
+__DEVICE__ float3 RGBtoHSV(float fR, float fG, float fB) {
+  float fH,fS,fV;
+  float fCMax = max(max(fR, fG), fB);
+  float fCMin = min(min(fR, fG), fB);
+  float fDelta = fCMax - fCMin;
+
+  if(fDelta > 0) {
+    if(fCMax == fR) {
+      fH = 60 * (_fmod(((fG - fB) / fDelta), 6));
+    } else if(fCMax == fG) {
+      fH = 60 * (((fB - fR) / fDelta) + 2);
+    } else if(fCMax == fB) {
+      fH = 60 * (((fR - fG) / fDelta) + 4);
+    }
+
+    if(fCMax > 0) {
+      fS = fDelta / fCMax;
+    } else {
+      fS = 0;
+    }
+
+    fV = fCMax;
+  } else {
+    fH = 0;
+    fS = 0;
+    fV = fCMax;
+  }
+
+  if(fH < 0) {
+    fH = 360 + fH;
+  }
+  return make_float3(fH,fS,fV);
+}
+
+__DEVICE__ float3 HSVtoRGB(float fH, float fS, float fV) {
+  float fR,fG,fB;
+  float fC = fV * fS;
+  float fHPrime = _fmod(fH / 60.0f, 6);
+  float fX = fC * (1 - _fabs(_fmod(fHPrime, 2) - 1));
+  float fM = fV - fC;
+
+  if(0 <= fHPrime && fHPrime < 1) {
+    fR = fC; fG = fX; fB = 0;
+  } else if(1 <= fHPrime && fHPrime < 2) {
+    fR = fX; fG = fC; fB = 0;
+  } else if(2 <= fHPrime && fHPrime < 3) {
+    fR = 0; fG = fC; fB = fX;
+  } else if(3 <= fHPrime && fHPrime < 4) {
+    fR = 0; fG = fX; fB = fC;
+  } else if(4 <= fHPrime && fHPrime < 5) {
+    fR = fX; fG = 0; fB = fC;
+  } else if(5 <= fHPrime && fHPrime < 6) {
+    fR = fC; fG = 0; fB = fX;
+  } else {
+    fR = 0; fG = 0; fB = 0;
+  }
+
+  fR += fM; fG += fM; fB += fM;
+  return make_float3(fR,fG,fB);
+}
+
+
+// ---------------------------------------------------------------------------
+// MAIN TRANSFORM
+// ---------------------------------------------------------------------------
+
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
+{
+    // -----------------------------------------------------------------------
+    // 1. Decode log -> scene-linear in the native gamut
+    // -----------------------------------------------------------------------
+
+    float r_lin, g_lin, b_lin;
+
+    if (color_space == CS_LOGC3) {
+        r_lin = LogC3_to_lin(p_R);
+        g_lin = LogC3_to_lin(p_G);
+        b_lin = LogC3_to_lin(p_B);
+    } else if (color_space == CS_CINEON) {
+        r_lin = Cineon_to_lin(p_R);
+        g_lin = Cineon_to_lin(p_G);
+        b_lin = Cineon_to_lin(p_B);
+    } else if (color_space == CS_DWG) {
+        r_lin = DI_to_lin(p_R);
+        g_lin = DI_to_lin(p_G);
+        b_lin = DI_to_lin(p_B);
+    } else {
+        // ACEScct (default)
+        r_lin = ACEScct_to_lin(p_R);
+        g_lin = ACEScct_to_lin(p_G);
+        b_lin = ACEScct_to_lin(p_B);
+    }
+
+    // -----------------------------------------------------------------------
+    // 2. Convert native gamut -> AP1 linear
+    // -----------------------------------------------------------------------
+
+    float3 lin = make_float3(r_lin, g_lin, b_lin);
+
+    if (color_space == CS_LOGC3) {
+        lin = AWG3_to_AP1(lin);
+    } else if (color_space == CS_DWG) {
+        lin = DWG_to_AP1(lin);
+    } else if (color_space == CS_CINEON) {
+        lin = Rec709_to_AP1(lin);
+    }
+
+    // -----------------------------------------------------------------------
+    // 3. Convert AP1 linear -> native gamut
+    // -----------------------------------------------------------------------
+
+    float3 out = lin;
+
+    if (color_space == CS_LOGC3) {
+        out = AP1_to_AWG3(out);
+    } else if (color_space == CS_DWG) {
+        out = AP1_to_DWG(out);
+    } else if (color_space == CS_CINEON) {
+        out = AP1_to_Rec709(out);
+    }
+
+    // -----------------------------------------------------------------------
+    // 4. HSV color boost / subsat — in linear, before re-encode
+    // -----------------------------------------------------------------------
+
+    {
+        float3 hsv = RGBtoHSV(out.x, out.y, out.z);
+        float key = hsv.y;
+        hsv.y += _saturatef(key * slider2);
+        hsv.z -= _saturatef(key * slider2);
+        hsv.y  = _saturatef(hsv.y * boost);
+        out    = HSVtoRGB(hsv.x, hsv.y, hsv.z);
+    }
+
+
+    // -----------------------------------------------------------------------
+    // 5. Re-encode to log
+    // -----------------------------------------------------------------------
+
+    float r_enc, g_enc, b_enc;
+
+    if (color_space == CS_LOGC3) {
+        r_enc = lin_to_LogC3(out.x);
+        g_enc = lin_to_LogC3(out.y);
+        b_enc = lin_to_LogC3(out.z);
+    } else if (color_space == CS_CINEON) {
+        r_enc = lin_to_Cineon(out.x);
+        g_enc = lin_to_Cineon(out.y);
+        b_enc = lin_to_Cineon(out.z);
+    } else if (color_space == CS_DWG) {
+        r_enc = lin_to_DI(out.x);
+        g_enc = lin_to_DI(out.y);
+        b_enc = lin_to_DI(out.z);
+    } else {
+        r_enc = lin_to_ACEScct(out.x);
+        g_enc = lin_to_ACEScct(out.y);
+        b_enc = lin_to_ACEScct(out.z);
+    }
+
+    return make_float3(r_enc, g_enc, b_enc);
+}

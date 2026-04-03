@@ -1,0 +1,69 @@
+DEFINE_UI_PARAMS(enable1, Enable Outer, DCTLUI_CHECK_BOX, 1)
+DEFINE_UI_PARAMS(enable2, Enable Inner, DCTLUI_CHECK_BOX, 1)
+DEFINE_UI_PARAMS(enable3, Enable Center, DCTLUI_CHECK_BOX, 1)
+DEFINE_UI_PARAMS(area1, Outer Box, DCTLUI_SLIDER_FLOAT, 90, 0, 100, 1)
+DEFINE_UI_PARAMS(wid1, Thickness, DCTLUI_SLIDER_FLOAT, .5, 0, 10, .1)
+DEFINE_UI_PARAMS(asp1, Aspect, DCTLUI_SLIDER_FLOAT, 1.77, 0, 3, .1)
+DEFINE_UI_PARAMS(area2, Inter Box, DCTLUI_SLIDER_FLOAT, 80, 0, 100, 1)
+DEFINE_UI_PARAMS(wid2, Thickness, DCTLUI_SLIDER_FLOAT, .5, 0, 10, .1)
+DEFINE_UI_PARAMS(sizecross, Center Size, DCTLUI_SLIDER_FLOAT, 15, 4, 20, .1)
+DEFINE_UI_PARAMS(r, Red, DCTLUI_SLIDER_FLOAT, 1, 0.0, 1.0, 0.1)
+DEFINE_UI_PARAMS(g, Green, DCTLUI_SLIDER_FLOAT, 0, 0.0, 1.0, 0.1)
+DEFINE_UI_PARAMS(b, Blue, DCTLUI_SLIDER_FLOAT, 0, 0.0, 1.0, 0.1)
+
+
+
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
+{
+   float sq = (p_Width * p_Width + p_Height * p_Height);
+   float diag = _sqrtf(sq);
+   int border = round(diag * (100 - area1) / 400);
+   int border2 = round(diag * (100 - (area1+wid1)) / 400);
+   int border3 = round(diag * (100 - area2) / 400);
+   int border4 = round(diag * (100 - (area2+wid2)) / 400);
+   int border5 = round(diag * (100 - sizecross) / 400);
+   int border6 = round(diag * (100 - sizecross) / 225);
+   int aspect1 = round((p_Width - (p_Height * asp1))/2);
+   int aspect2 = round((p_Width - (p_Height * asp1))/2);
+
+   if (p_X < border + aspect1 || p_X > p_Width - border - aspect1 || p_Y < border || p_Y > p_Height - border) {
+      if (p_X < border2 + aspect1 || p_X > p_Width - border2 - aspect1  || p_Y < border2 || p_Y > p_Height - border2) {
+         return (make_float3(p_R, p_G, p_B));
+      } else {
+         if (enable1) return (make_float3(r, g, b));
+      }
+   } 
+
+
+   if (p_X < border3 + aspect2 || p_X > p_Width - border3 - aspect2 || p_Y < border3 || p_Y > p_Height - border3) {
+      if (p_X < border4 + aspect2 || p_X > p_Width - border4 - aspect2 || p_Y < border4 || p_Y > p_Height - border4) {
+         return (make_float3(p_R, p_G, p_B));
+      } else {
+         if (enable2) return (make_float3(r, g, b));
+      }
+   }
+
+
+   if (enable3) {   
+   int halfX = p_Width/2;
+   int halfY = p_Height/2;
+   int crossthick = 5;
+   if (p_X < border6 || p_X > p_Width - border6|| p_Y < border5 || p_Y > p_Height - border5) {
+       return make_float3(p_R, p_G, p_B);
+   }
+      else {
+      if (p_X < halfX && p_X > halfX-crossthick)  {
+          return make_float3(r, g, b);
+      }
+      if (p_Y < halfY && p_Y > halfY-crossthick) {
+       return make_float3(r, g, b);
+   }
+
+   }
+   }
+   
+
+   return (make_float3(p_R, p_G, p_B));
+  
+
+}

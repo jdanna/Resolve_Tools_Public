@@ -1,0 +1,25 @@
+DEFINE_UI_PARAMS(thresh, Threshold, DCTLUI_SLIDER_FLOAT, .02, 0.0, 1.0, 0.01)
+DEFINE_UI_PARAMS(borderthresh, Border, DCTLUI_SLIDER_FLOAT, 100, 0, 100, 1)
+DEFINE_UI_PARAMS(r, Red, DCTLUI_SLIDER_FLOAT, 1, 0.0, 1.0, 0.1)
+DEFINE_UI_PARAMS(g, Green, DCTLUI_SLIDER_FLOAT, 0, 0.0, 1.0, 0.1)
+DEFINE_UI_PARAMS(b, Blue, DCTLUI_SLIDER_FLOAT, 0, 0.0, 1.0, 0.1)
+
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
+{
+
+   float sq = (p_Width * p_Width + p_Height * p_Height);
+   float diag = _sqrtf(sq);   
+
+   int border = round(diag * (100 - borderthresh) / 400);
+   if (p_X < border || p_X > p_Width - border || p_Y < border || p_Y > p_Height - border || borderthresh >= 100) {
+   if (p_R + p_G + p_B > thresh) {
+      return (make_float3(p_R, p_G, p_B));
+   } else {
+      return (make_float3(r, g, b));
+   }
+   }
+   else {
+       return (make_float3(p_R, p_G, p_B));
+   }
+
+}

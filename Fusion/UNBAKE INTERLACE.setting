@@ -1,0 +1,300 @@
+{
+	Tools = ordered() {
+		MacroTool3 = MacroOperator {
+			Inputs = ordered() {
+				Input1 = InstanceInput {
+					SourceOp = "Background1",
+					Source = "RESAMPLE",
+					Default = 70,
+				},
+				Input2 = InstanceInput {
+					SourceOp = "Background1",
+					Source = "BLANKINGRECOVER",
+				},
+				Input3 = InstanceInput {
+					SourceOp = "Sharpen1",
+					Source = "sharpen",
+					Default = 1,
+				},
+				Input4 = InstanceInput {
+					SourceOp = "Transform3",
+					Source = "Size",
+					MaxScale = 1.1,
+					Default = 1,
+				},
+			},
+			Outputs = {
+				MainOutput1 = InstanceOutput {
+					SourceOp = "MediaOut1",
+					Source = "Output",
+				}
+			},
+			ViewInfo = GroupInfo { Pos = { 0, 0 } },
+			Tools = ordered() {
+				Blur1 = Blur {
+					Inputs = {
+						Filter = Input { Value = FuID { "Fast Gaussian" }, },
+						LockXY = Input { Value = 0, },
+						YBlurSize = Input { Value = 7.3, },
+						Input = Input {
+							SourceOp = "Merge2",
+							Source = "Output",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { 297.333, -2.99996 } },
+				},
+				Merge1 = Merge {
+					Inputs = {
+						EffectMask = Input {
+							SourceOp = "Blur1",
+							Source = "Output",
+						},
+						MaskChannel = Input { Value = 5, },
+						Background = Input {
+							SourceOp = "Transform1_1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Blur1_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 288.344, 96.1103 } },
+				},
+				Background1 = Background {
+					CtrlWZoom = false,
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						RESAMPLE = Input { Value = 70, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 448.718, 40.0073 } },
+					UserControls = ordered() { RESAMPLE = {
+							LINKS_Name = "RESAMPLE",
+							LINKID_DataType = "Number",
+							INPID_InputControl = "SliderControl",
+							INP_Integer = true,
+							INP_MinScale = 70,
+							INP_MaxScale = 99,
+							INP_MinAllowed = -1000000,
+							INP_MaxAllowed = 1000000,
+						}, BLANKINGRECOVER = {
+							LINKS_Name = "BLANKING RECOVER",
+							LINKID_DataType = "Number",
+							INPID_InputControl = "SliderControl",
+							INP_Integer = false,
+							INP_MinScale = 0,
+							INP_MaxScale = 25,
+							INP_MinAllowed = -1000000,
+							INP_MaxAllowed = 1000000,
+						} }
+				},
+				Background2 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftRed = Input { Value = 1, },
+						TopLeftGreen = Input { Value = 1, },
+						TopLeftBlue = Input { Value = 1, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 112, -129.333 } },
+				},
+				MediaOut1 = MediaOut {
+					Inputs = {
+						Index = Input { Value = "0", },
+						Input = Input {
+							SourceOp = "Sharpen1",
+							Source = "Output",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { 822.344, 97.6476 } },
+				},
+				Sharpen1 = ofx.com.blackmagicdesign.resolvefx.Sharpen {
+					CtrlWZoom = false,
+					Inputs = {
+						Source = Input {
+							SourceOp = "Transform3",
+							Source = "Output",
+						},
+						sharpen = Input { Value = 1, },
+						detailGroup = Input { Value = 1, },
+						finest = Input { Value = 0.02417, },
+						fine = Input { Value = 1, },
+						medium = Input { Value = 1, },
+						large = Input { Value = 1, },
+						lcGroup = Input { Value = 1, },
+						chroma = Input { Value = 1.003, },
+						blendGroup = Input { Value = 0, },
+						blendIn = Input { Value = 1, },
+						blend = Input { Value = 0, },
+						ignoreContentShape = Input { Value = 0, },
+						legacyIsProcessRGBOnly = Input { Value = 0, },
+						refreshTrigger = Input { Value = 1, },
+						resolvefxVersion = Input { Value = "1.0", },
+					},
+					ViewInfo = OperatorInfo { Pos = { 640, 100.091 } },
+				},
+				Merge2 = Merge {
+					Inputs = {
+						Background = Input {
+							SourceOp = "Background2",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Transform2",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 299.333, -64.4848 } },
+				},
+				Transform1 = Transform {
+					Inputs = {
+						UseSizeAndAspect = Input { Value = 0, },
+						YSize = Input {
+							Value = 0.3,
+							Expression = "1-Background1.RESAMPLE/100",
+						},
+						FilterMethod = Input { Value = 8, },
+						FlattenTransform = Input { Value = 1, },
+						ReferenceSize = Input { Value = 1, },
+						Input = Input {
+							SourceOp = "MediaIn1",
+							Source = "Output",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { -420.355, 34.3859 } },
+				},
+				Transform3 = Transform {
+					Inputs = {
+						Input = Input {
+							SourceOp = "Merge1",
+							Source = "Output",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { 437.011, 102.171 } },
+					UserControls = ordered() {
+						Size = {
+							LINKS_Name = "PUNCH IN",
+							LINKID_DataType = "Number",
+							INPID_InputControl = "SliderControl",
+							INPID_PreviewControl = "RectangleControl",
+							INP_Default = 1,
+							INP_Integer = false,
+							INP_MinScale = 1,
+							INP_MaxScale = 1.10000002384186,
+							INP_MinAllowed = 0,
+							INP_MaxAllowed = 1000000,
+							ICD_Center = 1,
+							PC_ControlGroup = 2,
+							PC_ControlID = 0,
+						}
+					}
+				},
+				Background3 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 52.6667, -76.8788 } },
+				},
+				Transform1_1 = Transform {
+					Inputs = {
+						UseSizeAndAspect = Input { Value = 0, },
+						YSize = Input {
+							Value = 0.3,
+							Expression = "1-Background1.RESAMPLE/100",
+						},
+						FilterMethod = Input { Value = 8, },
+						InvertTransform = Input { Value = 1, },
+						FlattenTransform = Input { Value = 1, },
+						Input = Input {
+							SourceOp = "Transform1",
+							Source = "Output",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { -251.447, 65.695 } },
+				},
+				Blur1_1 = Blur {
+					Inputs = {
+						Filter = Input { Value = FuID { "Fast Gaussian" }, },
+						LockXY = Input { Value = 0, },
+						YBlurSize = Input { Value = 18.9, },
+						Input = Input {
+							SourceOp = "MediaIn1",
+							Source = "Output",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { -30.6667, 189.182 } },
+				},
+				Transform2 = Transform {
+					Inputs = {
+						UseSizeAndAspect = Input { Value = 0, },
+						YSize = Input { Expression = "1-(Background1.BLANKINGRECOVER/100)", },
+						Input = Input {
+							SourceOp = "Background3",
+							Source = "Output",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { 176.667, -72.0303 } },
+				},
+				MediaIn1 = MediaIn {
+					ExtentSet = true,
+					CustomData = { MediaProps = {
+							MEDIA_AUDIO_TRACKS_DESC = {
+								{
+									MEDIA_AUDIO_BIT_DEPTH = 32,
+									MEDIA_AUDIO_FRAME_RATE = 29.97002997003,
+									MEDIA_AUDIO_NUM_CHANNELS = 2,
+									MEDIA_AUDIO_SAMPLE_RATE = 48000,
+									MEDIA_AUDIO_START_TIME = 0,
+									MEDIA_AUDIO_TRACK_ID = "Timeline Audio",
+									MEDIA_AUDIO_TRACK_NAME = "Timeline Audio [Timeline 3]"
+								}
+							},
+							MEDIA_AUDIO_TRACKS_NUM = 1,
+							MEDIA_HAS_AUDIO = true,
+							MEDIA_HEIGHT = 1080,
+							MEDIA_IS_SOURCE_RES = false,
+							MEDIA_MARK_IN = 0,
+							MEDIA_MARK_OUT = 29,
+							MEDIA_NAME = "Fusion Composition",
+							MEDIA_NUM_FRAMES = 30,
+							MEDIA_PAR = 1,
+							MEDIA_SRC_FRAME_RATE = 29.97002997003,
+							MEDIA_START_FRAME = 0,
+							MEDIA_WIDTH = 1920
+						}, },
+					Inputs = {
+						GlobalOut = Input { Value = 29, },
+						AudioTrack = Input { Value = FuID { "Timeline Audio" }, },
+						Layer = Input { Value = "0", },
+						ClipTimeEnd = Input { Value = 29, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						LeftAudio = Input {
+							SourceOp = "Left",
+							Source = "Data",
+						},
+						RightAudio = Input {
+							SourceOp = "Right",
+							Source = "Data",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { -714.322, 194.292 } },
+				},
+				Left = AudioDisplay {
+				},
+				Right = AudioDisplay {
+				}
+			},
+		}
+	},
+	ActiveTool = "MacroTool3"
+}

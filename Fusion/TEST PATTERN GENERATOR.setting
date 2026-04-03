@@ -1,0 +1,738 @@
+{
+	Tools = ordered() {
+		MacroTool3 = MacroOperator {
+			Inputs = ordered() {
+				Input1 = InstanceInput {
+					SourceOp = "Background3",
+					Source = "GENERATE",
+				},
+				Input2 = InstanceInput {
+					SourceOp = "Background3",
+					Source = "COLORSPACE",
+				},
+				Input3 = InstanceInput {
+					SourceOp = "Background3",
+					Source = "PATCHSIZE",
+					Default = 100,
+				},
+			},
+			Outputs = {
+				MainOutput1 = InstanceOutput {
+					SourceOp = "MediaOut1",
+					Source = "Output",
+				}
+			},
+			ViewInfo = GroupInfo { Pos = { 0, 0 } },
+			Tools = ordered() {
+				Merge6_1_1 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==5,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge5_1_1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background5_1_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 2091.31, -17.3426 } },
+				},
+				Background3 = Background {
+					CtrlWZoom = false,
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 2246.23, 17.0214 } },
+					UserControls = ordered() { NewControl = { INP_MaxAllowed = 1000000, INP_Integer = false, INPID_InputControl = "MultiButtonControl", MBTNC_ShowBasicButton = true, INP_MaxScale = 1, INP_MinScale = 0, INP_MinAllowed = -1000000, LINKID_DataType = "Number", MBTNC_ShowName = false, MBTNC_StretchToFit = false, MBTNC_ShowToolTip = false, LINKS_Name = "New Control", }, GENERATE = { { MBTNC_AddButton = "WHITE" }, { MBTNC_AddButton = "GREY" }, { MBTNC_AddButton = "RED" }, { MBTNC_AddButton = "GREEN" }, { MBTNC_AddButton = "BLUE" }, { MBTNC_AddButton = "GRAYSCALE" }, INP_MaxAllowed = 1000000, INP_Integer = false, INPID_InputControl = "MultiButtonControl", MBTNC_ShowBasicButton = true, INP_MaxScale = 1, INP_MinScale = 0, INP_MinAllowed = -1000000, LINKID_DataType = "Number", MBTNC_ShowName = true, MBTNC_StretchToFit = true, MBTNC_ShowToolTip = false, LINKS_Name = "GENERATE", }, WHITE = { INPID_InputControl = "ButtonControl", INP_Integer = false, LINKID_DataType = "Number", LINKS_Name = "WHITE", }, COLORSPACE = { { MBTNC_AddButton = "REC709" }, { MBTNC_AddButton = "ST2084 1000 NIT" }, { MBTNC_AddButton = "ST2084 3000 NIT" }, MBTNC_StretchToFit = false, INP_Integer = false, INPID_InputControl = "MultiButtonControl", LINKID_DataType = "Number", MBTNC_ShowName = false, MBTNC_ShowBasicButton = false, MBTNC_ShowToolTip = false, LINKS_Name = "COLORSPACE", }, PATCHSIZE = {
+							LINKS_Name = "PATCH SIZE %",
+							LINKID_DataType = "Number",
+							INPID_InputControl = "SliderControl",
+							INP_Default = 100,
+							INP_Integer = true,
+							INP_MinScale = 0,
+							INP_MaxScale = 100,
+							INP_MinAllowed = -1000000,
+							INP_MaxAllowed = 1000000,
+							ICD_Center = 50,
+							IC_Steps = 25,
+						} }
+				},
+				Background7 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 2218.05, 158.645 } },
+				},
+				Merge10 = Merge {
+					Inputs = {
+						Background = Input {
+							SourceOp = "Background7",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Merge9",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 2223.37, 253.869 } },
+				},
+				Transform1 = Transform {
+					Inputs = {
+						Size = Input { Expression = "Background3.PATCHSIZE/100", },
+						Input = Input {
+							SourceOp = "Merge10",
+							Source = "Output",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { 2355.7, 252.672 } },
+				},
+				Merge9 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.COLORSPACE==2,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge8_1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Merge6_1_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 2090.55, 253.869 } },
+				},
+				MediaOut1 = MediaOut {
+					Inputs = {
+						Index = Input { Value = "0", },
+						Input = Input {
+							SourceOp = "Transform1",
+							Source = "Output",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { 2543.42, 250.526 } },
+				},
+				Merge6 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==5,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge5",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background5",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1005.37, 277.983 } },
+				},
+				Background1_2 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftAlpha = Input { Value = 0.998, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 767.731, -160.402 } },
+				},
+				Background6 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1213.22, 184.964 } },
+				},
+				Merge2_1 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==2,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge1_1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background2_2_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 988.923, -70.0636 } },
+				},
+				Merge5_1 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==0,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge4_1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background4_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1290.15, 37.9314 } },
+				},
+				Background1_1_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftRed = Input { Value = 0.6766, },
+						TopLeftGreen = Input { Value = 0.6766, },
+						TopLeftBlue = Input { Value = 0.6766, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 795.645, -116.95 } },
+				},
+				Merge6_1 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==5,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge5_1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background5_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1396.07, 35.2675 } },
+				},
+				Merge5 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==0,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge4",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background4",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 809.254, 266.867 } },
+				},
+				Merge1_1_1 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==1,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Background1_2_1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background1_1_1_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1600.78, -173.324 } },
+				},
+				Merge3 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==3,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge2",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background2_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 640.481, 197.916 } },
+				},
+				Background1_2_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftAlpha = Input { Value = 0.998, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1462.21, -211.634 } },
+				},
+				Merge2_1_1 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==2,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge1_1_1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background2_2_1_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1683.4, -121.296 } },
+				},
+				Background2_1_1_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftGreen = Input { Value = 0.8715, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1705.57, -82.7726 } },
+				},
+				Background2_1_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftGreen = Input { Value = 0.7518, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1011.09, -30.8516 } },
+				},
+				Merge5_1_1 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==0,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge4_1_1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background4_1_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1984.63, -13.3006 } },
+				},
+				Background1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 287.593, 69.2222 } },
+				},
+				Background5_1_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						Type = Input { Value = FuID { "Horizontal" }, },
+						TopRightRed = Input { Value = 0.8715, },
+						TopRightGreen = Input { Value = 0.8715, },
+						TopRightBlue = Input { Value = 0.8715, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 2089.59, -71.5836 } },
+				},
+				Background2_2_1_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftRed = Input { Value = 0.8715, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1572.45, -122.321 } },
+				},
+				Background5 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						Type = Input { Value = FuID { "Horizontal" }, },
+						TopRightRed = Input { Value = 1, },
+						TopRightGreen = Input { Value = 1, },
+						TopRightBlue = Input { Value = 1, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 828.575, 167.246 } },
+				},
+				Background1_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftRed = Input { Value = 0.5, },
+						TopLeftGreen = Input { Value = 0.5, },
+						TopLeftBlue = Input { Value = 0.5, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 313.992, 113.365 } },
+				},
+				Merge4 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==4,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge3",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background2",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 647.552, 235.627 } },
+				},
+				Background4_1_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftRed = Input { Value = 0.8715, },
+						TopLeftGreen = Input { Value = 0.8715, },
+						TopLeftBlue = Input { Value = 0.8715, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1822.69, 12.4124 } },
+				},
+				Merge7 = Merge {
+					Inputs = {
+						Blend = Input { Expression = "iif(Background3.COLORSPACE==1,1,0)", },
+						Background = Input {
+							SourceOp = "Merge8",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Merge6_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1411.99, 260.759 } },
+				},
+				Background4_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftRed = Input { Value = 0.7518, },
+						TopLeftGreen = Input { Value = 0.7518, },
+						TopLeftBlue = Input { Value = 0.7518, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1122.15, 58.8216 } },
+				},
+				Background6_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1609.59, 179.453 } },
+				},
+				Merge4_1 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==4,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge3_1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background2_3",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1128.45, 3.2465 } },
+				},
+				Background2_3_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftBlue = Input { Value = 0.8715, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1697.84, -46.4565 } },
+				},
+				Background2_2 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftRed = Input { Value = 1, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 397.084, 158.536 } },
+				},
+				Merge3_1_1 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==3,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge2_1_1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background2_1_1_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1815.85, -83.6296 } },
+				},
+				Merge3_1 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==3,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge2_1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background2_1_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1121.38, -32.3976 } },
+				},
+				Background5_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						Type = Input { Value = FuID { "Horizontal" }, },
+						TopRightRed = Input { Value = 0.7518, },
+						TopRightGreen = Input { Value = 0.7518, },
+						TopRightBlue = Input { Value = 0.7518, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1394.35, -16.9067 } },
+				},
+				Merge8 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.COLORSPACE==1,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge6",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background6",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1223.74, 258.003 } },
+				},
+				Background4 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftRed = Input { Value = 1, },
+						TopLeftGreen = Input { Value = 1, },
+						TopLeftBlue = Input { Value = 1, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 645.043, 293.958 } },
+				},
+				Merge2 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==2,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background2_2",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 508.027, 160.251 } },
+				},
+				Merge4_1_1 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==4,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge3_1_1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background2_3_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1822.93, -47.9856 } },
+				},
+				Background2 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftBlue = Input { Value = 1, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 522.467, 239.912 } },
+				},
+				Merge8_1 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.COLORSPACE==2,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Merge7",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background6_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1613.29, 268.337 } },
+				},
+				Background2_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftGreen = Input { Value = 1, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 530.952, 198.773 } },
+				},
+				Merge1 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==1,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Background1",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background1_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 425.406, 108.222 } },
+				},
+				Merge1_1 = Merge {
+					Inputs = {
+						Blend = Input {
+							Value = 0,
+							Expression = "iif(Background3.GENERATE==1,1,0)",
+						},
+						Background = Input {
+							SourceOp = "Background1_2",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Background1_1_1",
+							Source = "Output",
+						},
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 906.302, -122.092 } },
+				},
+				Background2_2_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftRed = Input { Value = 0.7518, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 878.737, -69.7106 } },
+				},
+				Background2_3 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftBlue = Input { Value = 0.7518, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1003.36, 7.53151 } },
+				},
+				Background1_1_1_1 = Background {
+					Inputs = {
+						Width = Input { Value = 1920, },
+						Height = Input { Value = 1080, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+						TopLeftRed = Input { Value = 0.7961, },
+						TopLeftGreen = Input { Value = 0.7961, },
+						TopLeftBlue = Input { Value = 0.7961, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 1490.12, -165.426 } },
+				}
+			},
+		}
+	},
+	ActiveTool = "MacroTool3"
+}
