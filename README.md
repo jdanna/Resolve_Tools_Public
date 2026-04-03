@@ -132,8 +132,8 @@ Edge blanking detector — highlights areas in the border region that fall below
 
 ### `UNBAKE INTERLACE.setting`
 Vertically resamples baked-in interlacing to clean up visible lines. Controls:
-- **RESAMPLE** (70–99): Resampling quality
-- **BLANKING RECOVER** (0–25): Artifact recovery for blanking edges
+- **RESAMPLE** (70–99): Resampling strength
+- **BLANKING RECOVER** (0–25): Recovery for softened blanking edges
 - Sharpen and punch-in/zoom controls
 
 <img width="416" height="185" alt="Screenshot 2026-04-02 at 10 39 00 PM" src="https://github.com/user-attachments/assets/b935fa9e-51c6-4e2d-be9b-2d89051f0618" />
