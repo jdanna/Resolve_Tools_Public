@@ -19,7 +19,7 @@ Same as above but prompts for how many copies to make, creating each with an inc
 <img width="264" height="125" alt="Screenshot 2026-04-02 at 10 21 07 PM" src="https://github.com/user-attachments/assets/45e2240f-1a4f-4424-a7d5-c63028a3117e" />
 
 #### `CREATE TIMELINES.py`
-Takes every clip in the current media pool folder and creates a separate timeline for each one, named after the clip (without extension). Useful for organizing individual clips into their own sequences, with matching start timecode.
+Takes every clip in the current media pool folder and creates a separate timeline for each one, named after the clip (without extension). Useful for organizing individual clips into their own sequences, with matching start timecode. (screenshot is out of date - sequence timecode start will match the source)
 
 <img width="378" height="349" alt="Screenshot 2026-04-02 at 10 34 55 PM" src="https://github.com/user-attachments/assets/34c23f63-55ac-4a12-bb34-08aff9b9bcb0" />
 
