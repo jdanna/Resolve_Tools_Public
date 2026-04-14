@@ -291,8 +291,14 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
         float ld = (ok.x - midgrey_L) / ok_sigma;
         float luma_weight = _expf(-0.5f * ld * ld);
 
+        // Chroma-aware weight: luma subtraction scales with saturation.
+        // Smooth curve — 0 for neutrals, approaches 1 for highly saturated colours.
+        // Reaches 0.5 at C ≈ 0.1 (typical moderately saturated colour).
+        float C_raw = _sqrtf(ok.y * ok.y + ok.z * ok.z);
+        float chroma_weight = C_raw / (C_raw + 0.1f);
+
         float sat_gain = slider2 * luma_weight;
-        ok.x *= (1.0f - sat_gain * luma_rate);
+        ok.x *= (1.0f - sat_gain * luma_rate * chroma_weight);
         ok.y *= (1.0f + sat_gain);
         ok.z *= (1.0f + sat_gain);
 
