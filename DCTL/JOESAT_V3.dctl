@@ -6,8 +6,9 @@
 // Input / Output color space selector.
 DEFINE_UI_PARAMS(color_space, Color Space, DCTLUI_COMBO_BOX, 0, {CS_ACESCCT, CS_LOGC3, CS_CINEON, CS_DWG}, {ACEScct, ARRI LogC3, Cineon Log, DaVinci Intermediate})
 
-DEFINE_UI_PARAMS(slider2, Subsat, DCTLUI_SLIDER_FLOAT, 0, 0, .2, 0.1)
-DEFINE_UI_PARAMS(boost, Color Boost, DCTLUI_SLIDER_FLOAT, 1, 0, 2, 0.1)
+DEFINE_UI_PARAMS(slider2, Subsat, DCTLUI_SLIDER_FLOAT, 0, 0, 1, 0.01)
+DEFINE_UI_PARAMS(luma_rate, Subsat Luma Rate, DCTLUI_SLIDER_FLOAT, 0.15, 0.05, 0.5, 0.01)
+DEFINE_UI_PARAMS(boost, Color Boost, DCTLUI_SLIDER_FLOAT, 1, 0, 2, 0.01)
 
 
 // ---------------------------------------------------------------------------
@@ -203,71 +204,6 @@ __DEVICE__ float3 AP1_to_Rec709(float3 v) {
 
 
 
-// ---------------------------------------------------------------------------
-// HSV HELPERS
-// ---------------------------------------------------------------------------
-
-__DEVICE__ float3 RGBtoHSV(float fR, float fG, float fB) {
-  float fH,fS,fV;
-  float fCMax = max(max(fR, fG), fB);
-  float fCMin = min(min(fR, fG), fB);
-  float fDelta = fCMax - fCMin;
-
-  if(fDelta > 0) {
-    if(fCMax == fR) {
-      fH = 60 * (_fmod(((fG - fB) / fDelta), 6));
-    } else if(fCMax == fG) {
-      fH = 60 * (((fB - fR) / fDelta) + 2);
-    } else if(fCMax == fB) {
-      fH = 60 * (((fR - fG) / fDelta) + 4);
-    }
-
-    if(fCMax > 0) {
-      fS = fDelta / fCMax;
-    } else {
-      fS = 0;
-    }
-
-    fV = fCMax;
-  } else {
-    fH = 0;
-    fS = 0;
-    fV = fCMax;
-  }
-
-  if(fH < 0) {
-    fH = 360 + fH;
-  }
-  return make_float3(fH,fS,fV);
-}
-
-__DEVICE__ float3 HSVtoRGB(float fH, float fS, float fV) {
-  float fR,fG,fB;
-  float fC = fV * fS;
-  float fHPrime = _fmod(fH / 60.0f, 6);
-  float fX = fC * (1 - _fabs(_fmod(fHPrime, 2) - 1));
-  float fM = fV - fC;
-
-  if(0 <= fHPrime && fHPrime < 1) {
-    fR = fC; fG = fX; fB = 0;
-  } else if(1 <= fHPrime && fHPrime < 2) {
-    fR = fX; fG = fC; fB = 0;
-  } else if(2 <= fHPrime && fHPrime < 3) {
-    fR = 0; fG = fC; fB = fX;
-  } else if(3 <= fHPrime && fHPrime < 4) {
-    fR = 0; fG = fX; fB = fC;
-  } else if(4 <= fHPrime && fHPrime < 5) {
-    fR = fX; fG = 0; fB = fC;
-  } else if(5 <= fHPrime && fHPrime < 6) {
-    fR = fC; fG = 0; fB = fX;
-  } else {
-    fR = 0; fG = 0; fB = 0;
-  }
-
-  fR += fM; fG += fM; fB += fM;
-  return make_float3(fR,fG,fB);
-}
-
 
 // ---------------------------------------------------------------------------
 // MAIN TRANSFORM
@@ -313,9 +249,88 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
     } else if (color_space == CS_CINEON) {
         lin = Rec709_to_AP1(lin);
     }
+    // ACEScct is already AP1 — no conversion needed.
 
     // -----------------------------------------------------------------------
-    // 3. Convert AP1 linear -> native gamut
+    // 3. Chroma operations in Oklab — perceptually uniform, hue-neutral.
+    //    AP1 (D60) → LMS using a matrix that pre-composes the Bradford
+    //    D60→D65 chromatic adaptation.  This ensures AP1 neutral grey maps
+    //    to Oklab (L, 0, 0) with no hue bias — no intermediate sRGB step.
+    // -----------------------------------------------------------------------
+
+    {
+        // AP1 (D60) → LMS with Bradford D60→D65 CAT pre-composed.
+        // Rows sum to ≈1, so white (1,1,1) → (1,1,1) → Oklab a=0, b=0.
+        float3 lms = mat33_mul(
+            0.63169f, 0.34913f, 0.01941f,
+            0.27031f, 0.63113f, 0.09908f,
+            0.09882f, 0.18530f, 0.71634f,
+            lin);
+
+        // Cube root — signed to handle out-of-gamut negative LMS values
+        float lc = (lms.x >= 0.0f) ? _powf(lms.x, 0.33333333f) : -_powf(-lms.x, 0.33333333f);
+        float mc = (lms.y >= 0.0f) ? _powf(lms.y, 0.33333333f) : -_powf(-lms.y, 0.33333333f);
+        float sc = (lms.z >= 0.0f) ? _powf(lms.z, 0.33333333f) : -_powf(-lms.z, 0.33333333f);
+
+        // LMS' → Oklab (M2):  L = lightness,  a = green↔red,  b = blue↔yellow
+        float3 ok = mat33_mul(
+            0.2104542553f,  0.7936177850f, -0.0040720468f,
+            1.9779984951f, -2.4285922050f,  0.4505937099f,
+            0.0259040371f,  0.7827717662f, -0.8086757660f,
+            make_float3(lc, mc, sc));
+
+        // ------------------------------------------------------------------
+        // Subsat: scale Oklab chroma (a, b) + slight L decrease.
+        //   Gaussian weight centred at L = 0.5646 (= cbrt(0.18), the Oklab
+        //   lightness of 18% grey — the same reference for every colour space
+        //   since all decode to the same AP1 linear value).
+        // ------------------------------------------------------------------
+
+        const float midgrey_L = 0.5646f;
+        const float ok_sigma  = 0.20f;
+        float ld = (ok.x - midgrey_L) / ok_sigma;
+        float luma_weight = _expf(-0.5f * ld * ld);
+
+        float sat_gain = slider2 * luma_weight;
+        ok.x *= (1.0f - sat_gain * luma_rate);
+        ok.y *= (1.0f + sat_gain);
+        ok.z *= (1.0f + sat_gain);
+
+        // ------------------------------------------------------------------
+        // Color Boost: scale Oklab chroma weighted towards neutral colours.
+        //   Gaussian centred at C = 0 rolls off towards the gamut boundary.
+        // ------------------------------------------------------------------
+
+        float C = _sqrtf(ok.y * ok.y + ok.z * ok.z);
+        const float boost_sigma_C = 0.12f;
+        float boost_weight = _expf(-0.5f * (C / boost_sigma_C) * (C / boost_sigma_C));
+        float boost_factor  = 1.0f + (boost - 1.0f) * boost_weight;
+        ok.y *= boost_factor;
+        ok.z *= boost_factor;
+
+        // Oklab → LMS' (M2 inverse)
+        float3 lms_c = mat33_mul(
+            1.0000000000f,  0.3963377774f,  0.2158037573f,
+            1.0000000000f, -0.1055613458f, -0.0638541728f,
+            1.0000000000f, -0.0894841775f, -1.2914855480f,
+            ok);
+
+        // Cube LMS' back to linear LMS
+        float3 lms_out = make_float3(
+            lms_c.x * lms_c.x * lms_c.x,
+            lms_c.y * lms_c.y * lms_c.y,
+            lms_c.z * lms_c.z * lms_c.z);
+
+        // LMS → AP1 (D60) with Bradford D65→D60 CAT pre-composed.
+        lin = mat33_mul(
+             2.06923f, -1.17549f,  0.10662f,
+            -0.87712f,  2.14966f, -0.27342f,
+            -0.05868f, -0.39378f,  1.45184f,
+            lms_out);
+    }
+
+    // -----------------------------------------------------------------------
+    // 4. Convert AP1 linear -> native gamut
     // -----------------------------------------------------------------------
 
     float3 out = lin;
@@ -326,19 +341,6 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
         out = AP1_to_DWG(out);
     } else if (color_space == CS_CINEON) {
         out = AP1_to_Rec709(out);
-    }
-
-    // -----------------------------------------------------------------------
-    // 4. HSV color boost / subsat — in linear, before re-encode
-    // -----------------------------------------------------------------------
-
-    {
-        float3 hsv = RGBtoHSV(out.x, out.y, out.z);
-        float key = hsv.y;
-        hsv.y += _saturatef(key * slider2);
-        hsv.z -= _saturatef(key * slider2);
-        hsv.y  = _saturatef(hsv.y * boost);
-        out    = HSVtoRGB(hsv.x, hsv.y, hsv.z);
     }
 
 
