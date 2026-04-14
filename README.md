@@ -90,15 +90,16 @@ Fills the left and right sides of frame with a solid color.
 | Red / Green / Blue | 0.0 – 1.0 | 1 / 0 / 0 | Bar color |
 
 ### `JOESAT V3.dctl`
-Saturation and subtractive saturation tool with multi-format color space support.
+Saturation tool with subtractive saturation and multi-format color space support.
 
-<img width="415" height="175" alt="Screenshot 2026-04-02 at 10 27 19 PM" src="https://github.com/user-attachments/assets/4e996330-89ac-42d0-9067-fe3dfe6da194" />
+<img width="415" height="175" alt="JOESAT V3 DCTL panel" src="assets/joesat_v3.png" />
 
 | Parameter | Range | Default | Description |
 |---|---|---|---|
 | Color Space | — | ACEScct | Input/output color space: ACEScct, ARRI LogC3, Cineon Log, DaVinci Intermediate |
-| Subsat | 0 – 0.2 | 0 | Subtractive saturation — reduces saturation and luminance in proportion to existing color |
-| Color Boost | 0 – 2 | 1 | Overall saturation multiplier |
+| Subsat | 0 – 1 | 0 | Boosts chroma while simultaneously darkening mid-tone colors. Both effects are Gaussian-weighted around 18% grey, leaving highlights and shadows largely unaffected. |
+| Subsat Luma Rate | 0.05 – 0.5 | 0.15 | Controls how much luminance is pulled down alongside the chroma boost. Higher values darken colored mid-tones more aggressively. |
+| Color Boost | 0 – 2 | 1 | Chroma multiplier weighted towards neutral and mid-saturation colors. Boosts subtle hues without over-saturating colors that are already vivid. |
 
 ### `TITLESAFE.dctl`
 Displays configurable safe area guides (action safe, title safe, center crosshair).
