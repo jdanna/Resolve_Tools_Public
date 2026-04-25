@@ -129,9 +129,14 @@ Edge blanking detector — highlights areas in the border region that fall below
 
 ---
 
-## Fusion Macros (`Fusion/`)
+## Fusion Effects (`Fusion/`)
 
-### `UNBAKE INTERLACE.setting`
+### `RL_SLATEGEN.drfx`
+Parametric slate generator with customizable text, fields, background and more.
+
+<img alt="RL_SLATEGEN" src="assets/slategen.png" />
+
+### `UNBAKE_INTERLACE.drfx`
 Vertically resamples baked-in interlacing to clean up visible lines. Controls:
 - **RESAMPLE** (70–99): Resampling strength
 - **BLANKING RECOVER** (0–25): Recovery for softened blanking edges
@@ -139,7 +144,7 @@ Vertically resamples baked-in interlacing to clean up visible lines. Controls:
 
 <img width="416" height="185" alt="Screenshot 2026-04-02 at 10 39 00 PM" src="https://github.com/user-attachments/assets/b935fa9e-51c6-4e2d-be9b-2d89051f0618" />
 
-### `TEST PATTERN GENERATOR.setting`
+### `TEST_PATTERN_GENERATOR.drfx`
 Generates video test patterns for QA and display calibration.
 
 <img width="939" height="431" alt="Screenshot 2026-04-02 at 10 39 40 PM" src="https://github.com/user-attachments/assets/79073aaa-28e3-4042-979c-07ba97c71ecc" />
