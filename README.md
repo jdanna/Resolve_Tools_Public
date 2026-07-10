@@ -23,6 +23,19 @@ Takes every clip in the current media pool folder and creates a separate timelin
 
 <img width="378" height="349" alt="Screenshot 2026-04-02 at 10 34 55 PM" src="https://github.com/user-attachments/assets/34c23f63-55ac-4a12-bb34-08aff9b9bcb0" />
 
+#### `RL_XML_NOTCH.py`
+Notches a **baked (flattened) render of a Premiere Pro timeline** back into its original edit structure. Select the baked clip in the media pool, run the script, and point it at the FCP7 XML export of the Premiere sequence. Creates a new timeline containing the baked clip:
+- Cut at every edit point from the XML (all video tracks, flattened)
+- Cross dissolves recreated where the XML had transitions — including fades to/from black
+- Empty gaps wherever no video track had a clip (black in the bake)
+- Timeline start timecode matches the clip's start timecode, so timeline position equals source timecode frame-for-frame
+
+Options:
+- **Treat all transitions as cuts** — no dissolves are created; transitions between clips become a single cut centered in the transition span, and fades to/from black leave a solid clip covering the full span
+- **Treat edge transitions as cuts** — dissolves between clips are kept, but fades to/from black at either edge of a clip become plain cuts
+
+Useful for grading/finishing a flat trailer or promo export as if it were the original cut. Built by generating an OpenTimelineIO file with the standard library (no extra packages needed) and importing it, since the Resolve API can't add cuts or transitions directly. Requires Resolve 18.5+.
+
 ---
 
 ### Timecode & Segment Tools
