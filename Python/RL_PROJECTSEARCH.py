@@ -1,6 +1,6 @@
 """RL_PROJECTSEARCH
 
-Standalone search tool for the DaVinci Resolve Project Manager database.
+Search tool for the DaVinci Resolve Project Manager database.
 
 Indexes every project across every folder in the current database (recursively,
 starting from root) and shows them in a searchable list. Type in the search box to
@@ -20,11 +20,6 @@ filter by project name (case insensitive), select a result, then:
 
 Open / Open Folder / Export never close the script, so you can act on several
 projects in one session.
-
-Unlike the scripts in Python/CLI/, this is meant to be run as a plain standalone
-Python process (double-clicked or run from a terminal) rather than from Resolve's
-Workspace > Scripts menu, so it does its own DaVinciResolveScript module bootstrap.
-DaVinci Resolve must already be running.
 """
 
 import sys

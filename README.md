@@ -37,7 +37,7 @@ Options:
 <img width="574" height="249" alt="RL_XML_NOTCH dialog" src="assets/xmlnotch.png" />
 
 #### `RL_PROJECTSEARCH.py`
-Standalone Project Manager search tool - run it directly (not from Resolve's Scripts menu). Indexes every project in the database and lets you search, then **Open**, **Open Folder**, or **Export** it as a `.drp`.
+Indexes every project in the Project Manager database and lets you search by name, then **Open**, **Open Folder**, or **Export** it as a `.drp`.
 
 <img width="643" height="508" alt="RL_PROJECTSEARCH window" src="assets/projectsearch.png" />
 
