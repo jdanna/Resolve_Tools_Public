@@ -1,0 +1,38 @@
+DaVinci Resolve Scripting API Changelog
+---------------------------------------
+
+Last Updated: 28 July 2025
+
+This file documents scripting changes by version.
+For the overall DaVinci Resolve Scripting API, please refer to Developer/Scripting/README.txt.
+
+API Changes by DaVinci Resolve version:
+---------------------------------------
+
+## 20.1
+
+Added:
+* Timeline.GetVoiceIsolationState(trackIndex)
+* Timeline.SetVoiceIsolationState(trackIndex, {VoiceIsolationState})
+* TimelineItem.GetVoiceIsolationState()
+* TimelineItem.EnableVoiceIsolationState({VoiceIsolationState})
+
+Addressed:
+* Interlaced clip frame offset issues in multiple APIs.
+
+## 20.0.1
+
+Addressed:
+* MediaPool.AppendToTimeline not working in some scenarios.
+
+## 20.0
+
+Added:
+* MediaPoolItem.LinkFullResolutionMedia(fullResMediaPath)
+* MediaPoolItem.ReplaceClipPreserveSubClip(filePath) 
+* MediaPoolItem.MonitorGrowingFile()
+
+Addressed:
+* TimelineItem.GetRightExtents return (it now returns offset between right edit point and media extents end).
+* Occasional lags for some scripting APIs.
+* AddFusionComp sometimes showing incorrect composition.

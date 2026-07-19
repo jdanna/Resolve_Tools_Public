@@ -1,0 +1,72 @@
+{
+  "$schema": "https://ograf.ebu.io/v1/specification/json-schemas/graphics/schema.json",
+  "id": "my-template-id",
+  "version": "1.0.0",
+  "name": "My Template Name",
+  "description": "Short description of the graphic.",
+  "author": {
+    "name": "Author Name"
+  },
+  "main": "my-template.js",
+  "v_bmd": {
+    "duration": 5
+  },
+  "stepCount": 1,
+  "supportsRealTime": false,
+  "supportsNonRealTime": true,
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "headline": {
+        "type": "string",
+        "title": "Headline",
+        "default": "HEADLINE TEXT"
+      },
+      "subtitle": {
+        "type": "string",
+        "title": "Subtitle",
+        "default": "Subtitle text"
+      },
+      "showBadge": {
+        "type": "boolean",
+        "title": "Show Badge",
+        "default": true
+      },
+      "scale": {
+        "type": "number",
+        "title": "Scale",
+        "minimum": 0.5,
+        "maximum": 2.0,
+        "default": 1.0
+      },
+      "primaryColor": {
+        "type": "string",
+        "title": "Primary Color",
+        "gddType": "color-rrggbb",
+        "pattern": "^#[0-9a-f]{6}$",
+        "default": "#2563eb"
+      },
+      "accentColor": {
+        "type": "string",
+        "title": "Accent Color",
+        "gddType": "color-rrggbb",
+        "pattern": "^#[0-9a-f]{6}$",
+        "default": "#cc0000"
+      }
+    },
+    "required": [
+      "headline"
+    ]
+  },
+  "renderRequirements": [
+    {
+      "resolution": {
+        "width": { "ideal": 1920 },
+        "height": { "ideal": 1080 }
+      },
+      "frameRate": { "ideal": 30 },
+      "accessToPublicInternet": { "ideal": false }
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "$schema": "https://ograf.ebu.io/v1/specification/json-schemas/graphics/schema.json",
+  "id": "modern-breaking-news-v2",
+  "version": "1.0.0",
+  "name": "Breaking News Broadcast",
+  "description": "Professional broadcast-style breaking news lower-third with logo bug and scrolling news ticker.",
+  "author": {
+    "name": "OGraf Templates"
+  },
+  "main": "Breaking-News.js",
+  "supportsRealTime": false,
+  "supportsNonRealTime": true,
+  "stepCount": 1,
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "liveBadgeText": {
+        "type": "string",
+        "title": "Live Badge Text",
+        "default": "LIVE"
+      },
+      "subtitle": {
+        "type": "string",
+        "title": "Subtitle",
+        "default": "LOREM IPSUM DOLOR SIT AMET"
+      },
+      "breakingText": {
+        "type": "string",
+        "title": "Breaking Text",
+        "default": "BREAKING"
+      },
+      "newsText": {
+        "type": "string",
+        "title": "News Text",
+        "default": "NEWS"
+      },
+      "categoryLabel": {
+        "type": "string",
+        "title": "Category Label",
+        "default": "LOREM IPSUM"
+      },
+      "headline": {
+        "type": "string",
+        "title": "Headline",
+        "default": "HEADLINE HERE"
+      },
+      "tickerText": {
+        "type": "string",
+        "title": "Ticker Text",
+        "default": "LOREM IPSUM DOLOR SIT AMET, CONSECTETUER ADIPISCING ELIT, SED DIAM NONUMMY NIBH EUISMOD TINCIDUNT"
+      },
+      "liveBadgeColor": {
+        "title": "Live Badge Color",
+        "type": "string",
+        "pattern": "^#[0-9a-f]{6}$",
+        "gddType": "color-rrggbb",
+        "default": "#c0392b"
+      },
+      "subtitleBarColor": {
+        "title": "Subtitle Bar Color",
+        "type": "string",
+        "pattern": "^#[0-9a-f]{6}$",
+        "gddType": "color-rrggbb",
+        "default": "#1a1a1a"
+      },
+      "breakingBgColor": {
+        "title": "Breaking Background Color",
+        "type": "string",
+        "pattern": "^#[0-9a-f]{6}$",
+        "gddType": "color-rrggbb",
+        "default": "#1a2744"
+      },
+      "newsBgColor": {
+        "title": "News Background Color",
+        "type": "string",
+        "pattern": "^#[0-9a-f]{6}$",
+        "gddType": "color-rrggbb",
+        "default": "#f0c030"
+      },
+      "categoryColor": {
+        "title": "Category Color",
+        "type": "string",
+        "pattern": "^#[0-9a-f]{6}$",
+        "gddType": "color-rrggbb",
+        "default": "#2563eb"
+      },
+      "headlineColor": {
+        "title": "Headline Color",
+        "type": "string",
+        "pattern": "^#[0-9a-f]{6}$",
+        "gddType": "color-rrggbb",
+        "default": "#c0392b"
+      },
+      "tickerBgColor": {
+        "title": "Ticker Background Color",
+        "type": "string",
+        "pattern": "^#[0-9a-f]{6}$",
+        "gddType": "color-rrggbb",
+        "default": "#f5f3ee"
+      }
+    },
+    "required": [
+      "headline"
+    ]
+  },
+  "renderRequirements": [
+    {
+      "resolution": {
+        "width": {
+          "ideal": 1920
+        },
+        "height": {
+          "ideal": 1080
+        }
+      },
+      "frameRate": {
+        "ideal": 30
+      }
+    }
+  ],
+  "v_bmd": {
+    "duration": 11
+  }
+}

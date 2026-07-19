@@ -1,0 +1,121 @@
+{
+  "$schema": "https://ograf.ebu.io/v1/specification/json-schemas/graphics/schema.json",
+  "id": "sports-match-result",
+  "version": "1.0.0",
+  "name": "Match Result",
+  "description": "Sports match result graphic with team bars, scores, gradient colors, and winner caption.",
+  "author": {
+    "name": "OGraf Templates"
+  },
+  "main": "Sport-Match-Result.js",
+  "supportsRealTime": false,
+  "supportsNonRealTime": true,
+  "stepCount": 1,
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "title": {
+        "type": "string",
+        "title": "Title",
+        "default": "MATCH RESULT"
+      },
+      "scale": {
+        "type": "number",
+        "title": "Global Size",
+        "minimum": 0.5,
+        "maximum": 2.0,
+        "default": 1.0
+      },
+      "titleColor": {
+        "title": "Title Color",
+        "type": "string",
+        "pattern": "^#[0-9a-f]{6}$",
+        "gddType": "color-rrggbb",
+        "default": "#1a1a1a"
+      },
+      "teamAName": {
+        "type": "string",
+        "title": "Team A - Name",
+        "default": "VANGUARD BEASTS"
+      },
+      "teamAScore": {
+        "type": "integer",
+        "title": "Team A - Score",
+        "minimum": 0,
+        "maximum": 999,
+        "default": 21
+      },
+      "teamACaption": {
+        "type": "string",
+        "title": "Team A - Caption",
+        "default": "VANGUARD BEASTS WIN GOLD"
+      },
+      "showTeamACaption": {
+        "type": "boolean",
+        "title": "Team A - Show Caption",
+        "default": true
+      },
+      "teamAColor": {
+        "title": "Team A - Color",
+        "type": "string",
+        "pattern": "^#[0-9a-f]{6}$",
+        "gddType": "color-rrggbb",
+        "default": "#1a5fb4"
+      },
+      "teamBName": {
+        "type": "string",
+        "title": "Team B - Name",
+        "default": "VANTA CLUB"
+      },
+      "teamBScore": {
+        "type": "integer",
+        "title": "Team B - Score",
+        "minimum": 0,
+        "maximum": 999,
+        "default": 19
+      },
+      "teamBCaption": {
+        "type": "string",
+        "title": "Team B - Caption",
+        "default": ""
+      },
+      "showTeamBCaption": {
+        "type": "boolean",
+        "title": "Team B - Show Caption",
+        "default": false
+      },
+      "teamBColor": {
+        "title": "Team B - Color",
+        "type": "string",
+        "pattern": "^#[0-9a-f]{6}$",
+        "gddType": "color-rrggbb",
+        "default": "#b91c1c"
+      }
+    },
+    "required": [
+      "teamAName",
+      "teamBName",
+      "teamAScore",
+      "teamBScore"
+    ]
+  },
+  "renderRequirements": [
+    {
+      "resolution": {
+        "width": {
+          "ideal": 1920
+        },
+        "height": {
+          "ideal": 1080
+        }
+      },
+      "frameRate": {
+        "ideal": 30
+      }
+    }
+  ],
+  "v_bmd": {
+    "duration": 5
+  }
+}

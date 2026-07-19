@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BlackmagicDesign>
+    <Plugin>
+        <Id>com.blackmagicdesign.resolve.samplepromiseplugin</Id>
+        <Name>Sample Promise Plugin</Name>
+        <Version>1.0</Version>
+        <Description>Sample Promise Plugin</Description>
+        <FilePath>main.js</FilePath>
+    </Plugin>
+</BlackmagicDesign>

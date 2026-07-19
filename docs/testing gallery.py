@@ -1,0 +1,11 @@
+import time
+resolve = bmd.scriptapp("Resolve")
+projectManager = resolve.GetProjectManager()
+project = projectManager.GetCurrentProject()
+timeline = project.GetCurrentTimeline()
+gallery = project.GetGallery()
+new = gallery.CreateGalleryStillAlbum()
+gallery.SetAlbumName(new,"SuperGroup")
+gallery.SetCurrentStillAlbum(new)
+time.sleep(1)
+timeline.GrabAllStills(2)   
