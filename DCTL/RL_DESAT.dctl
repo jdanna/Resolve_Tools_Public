@@ -8,7 +8,7 @@ DEFINE_UI_PARAMS(desat, Desat, DCTLUI_SLIDER_FLOAT, 0, 0, 100, 0.1)
 DEFINE_UI_PARAMS(gainR, R, DCTLUI_SLIDER_FLOAT, 0, -1, 1, 0.01)
 DEFINE_UI_PARAMS(gainG, G, DCTLUI_SLIDER_FLOAT, 0, -1, 1, 0.01)
 DEFINE_UI_PARAMS(gainB, B, DCTLUI_SLIDER_FLOAT, 0, -1, 1, 0.01)
-DEFINE_UI_PARAMS(colorSpace, Color Space, DCTLUI_COMBO_BOX, 0, {CS_LOGC3, CS_LOGC4, CS_ACESCCT, CS_DWG, CS_REC709}, {ARRI LogC3, ARRI LogC4, ACEScct, DaVinci Wide Gamut, Rec709})
+DEFINE_UI_PARAMS(colorSpace, Color Space, DCTLUI_COMBO_BOX, 2, {CS_LOGC3, CS_LOGC4, CS_ACESCCT, CS_DWG, CS_REC709}, {ARRI LogC3, ARRI LogC4, ACEScct, DaVinci Wide Gamut, Rec709})
 
 // -----------------------------------------------------------------------------
 // ARRI LogC3 (EI 800) — source: ARRI "ALEXA LogC Curve Usage in VFX" whitepaper
