@@ -119,6 +119,9 @@ Saturation tool with subtractive saturation and multi-format color space support
 | Subsat Luma Rate | 0.05 – 0.5 | 0.15 | Controls how much luminance is pulled down alongside the chroma boost. Higher values darken colored mid-tones more aggressively. |
 | Color Boost | 0 – 2 | 1 | Chroma multiplier weighted towards neutral and mid-saturation colors. Boosts subtle hues without over-saturating colors that are already vivid. |
 
+### `RL_DESAT.dctl`
+Creative desaturation that blends in a black & white copy of the image, with R/G/B controls that act like color filters used in black & white film photography.
+
 ### `TITLESAFE.dctl`
 Displays configurable safe area guides (action safe, title safe, center crosshair).
 

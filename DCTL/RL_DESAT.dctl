@@ -1,0 +1,181 @@
+// =============================================================================
+//  RL_DESAT.dctl
+//  Black & white filter desaturation: linear-light channel mix blended back
+//  in the native log/gamma domain of the selected color space.
+// =============================================================================
+
+DEFINE_UI_PARAMS(desat, Desat, DCTLUI_SLIDER_FLOAT, 0, 0, 100, 0.1)
+DEFINE_UI_PARAMS(gainR, R, DCTLUI_SLIDER_FLOAT, 0, -1, 1, 0.01)
+DEFINE_UI_PARAMS(gainG, G, DCTLUI_SLIDER_FLOAT, 0, -1, 1, 0.01)
+DEFINE_UI_PARAMS(gainB, B, DCTLUI_SLIDER_FLOAT, 0, -1, 1, 0.01)
+DEFINE_UI_PARAMS(colorSpace, Color Space, DCTLUI_COMBO_BOX, 0, {CS_LOGC3, CS_LOGC4, CS_ACESCCT, CS_DWG, CS_REC709}, {ARRI LogC3, ARRI LogC4, ACEScct, DaVinci Wide Gamut, Rec709})
+
+// -----------------------------------------------------------------------------
+// ARRI LogC3 (EI 800) — source: ARRI "ALEXA LogC Curve Usage in VFX" whitepaper
+// -----------------------------------------------------------------------------
+__DEVICE__ float LogC3_to_lin(float v)
+{
+    const float a = 5.555556f, b = 0.052272f, c = 0.247190f, d = 0.385537f, e = 5.367655f, f = 0.092809f;
+    const float enc_cut = e * 0.010591f + f;
+    return (v > enc_cut) ? (_powf(10.0f, (v - d) / c) - b) / a : (v - f) / e;
+}
+
+__DEVICE__ float lin_to_LogC3(float v)
+{
+    const float cut = 0.010591f, a = 5.555556f, b = 0.052272f, c = 0.247190f, d = 0.385537f, e = 5.367655f, f = 0.092809f;
+    return (v > cut) ? c * _log10f(_fmaxf(a * v + b, 1e-10f)) + d : e * v + f;
+}
+
+// -----------------------------------------------------------------------------
+// ARRI LogC4 — source: ARRI LogC4 Specification, 1st May 2022
+// a = (2^18 - 16) / 117.45, b = (1023 - 95) / 1023, c = 95 / 1023
+// s = (7*ln(2) * 2^(7 - 14*c/b)) / (a*b), t = (2^(14*(-c/b) + 6) - 64) / a
+// -----------------------------------------------------------------------------
+__DEVICE__ float LogC4_to_lin(float v)
+{
+    const float a = 2231.8263850232098f, b = 0.9072335891339541f, c = 0.09286412512218964f;
+    const float s = 0.0928077655659032f, t = -0.014006515228901528f;
+    return (v >= 0.0f) ? (_powf(2.0f, 14.0f * ((v - c) / b) + 6.0f) - 64.0f) / a : v * s + t;
+}
+
+__DEVICE__ float lin_to_LogC4(float v)
+{
+    const float a = 2231.8263850232098f, b = 0.9072335891339541f, c = 0.09286412512218964f;
+    const float s = 0.0928077655659032f, t = -0.014006515228901528f;
+    return (v >= t) ? (_log2f(_fmaxf(a * v + 64.0f, 1e-10f)) - 6.0f) / 14.0f * b + c : (v - t) / s;
+}
+
+// -----------------------------------------------------------------------------
+// ACEScct — source: Academy S-2016-001
+// -----------------------------------------------------------------------------
+__DEVICE__ float ACEScct_to_lin(float v)
+{
+    return (v <= 0.155251141552511f) ? (v - 0.0729055341958355f) / 10.5402377416672f : _powf(2.0f, v * 17.52f - 9.72f);
+}
+
+__DEVICE__ float lin_to_ACEScct(float v)
+{
+    return (v <= 0.0078125f) ? 10.5402377416672f * v + 0.0729055341958355f : (_log2f(_fmaxf(v, 1e-10f)) + 9.72f) / 17.52f;
+}
+
+// -----------------------------------------------------------------------------
+// DaVinci Wide Gamut / DaVinci Intermediate — source: Blackmagic "DaVinci
+// Resolve 17 Wide Gamut Intermediate" spec (Aug 2021)
+// -----------------------------------------------------------------------------
+__DEVICE__ float DI_to_lin(float v)
+{
+    const float A = 0.0075f, B = 7.0f, C = 0.07329248f, M = 10.44426855f, LOG_CUT = 0.02740668f;
+    return (v <= LOG_CUT) ? v / M : _powf(2.0f, v / C - B) - A;
+}
+
+__DEVICE__ float lin_to_DI(float v)
+{
+    const float A = 0.0075f, B = 7.0f, C = 0.07329248f, M = 10.44426855f, LIN_CUT = 0.00262409f;
+    return (v <= LIN_CUT) ? v * M : (_log2f(_fmaxf(v + A, 1e-10f)) + B) * C;
+}
+
+// -----------------------------------------------------------------------------
+// Rec709 — pure power gamma 2.4 (matches Resolve's "Rec.709 Gamma 2.4" CST)
+// -----------------------------------------------------------------------------
+__DEVICE__ float Rec709_to_lin(float v)
+{
+    return (v >= 0.0f) ? _powf(v, 2.4f) : -_powf(-v, 2.4f);
+}
+
+__DEVICE__ float lin_to_Rec709(float v)
+{
+    return (v >= 0.0f) ? _powf(v, 1.0f / 2.4f) : -_powf(-v, 1.0f / 2.4f);
+}
+
+// -----------------------------------------------------------------------------
+// transform
+// -----------------------------------------------------------------------------
+__DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p_R, float p_G, float p_B)
+{
+    float linR, linG, linB;
+
+    if (colorSpace == CS_LOGC3)
+    {
+        linR = LogC3_to_lin(p_R);
+        linG = LogC3_to_lin(p_G);
+        linB = LogC3_to_lin(p_B);
+    }
+    else if (colorSpace == CS_LOGC4)
+    {
+        linR = LogC4_to_lin(p_R);
+        linG = LogC4_to_lin(p_G);
+        linB = LogC4_to_lin(p_B);
+    }
+    else if (colorSpace == CS_ACESCCT)
+    {
+        linR = ACEScct_to_lin(p_R);
+        linG = ACEScct_to_lin(p_G);
+        linB = ACEScct_to_lin(p_B);
+    }
+    else if (colorSpace == CS_DWG)
+    {
+        linR = DI_to_lin(p_R);
+        linG = DI_to_lin(p_G);
+        linB = DI_to_lin(p_B);
+    }
+    else
+    {
+        linR = Rec709_to_lin(p_R);
+        linG = Rec709_to_lin(p_G);
+        linB = Rec709_to_lin(p_B);
+    }
+
+    // True per-gamut luma weights (Y row of each space's RGB->XYZ matrix,
+    // D65-referenced) as the neutral (slider = 0) baseline, so a slider at 0
+    // is colorimetrically neutral regardless of which space is selected.
+    // Positive slider values reduce a channel's weight toward zero, so areas
+    // rich in that channel go denser/darker; negative values raise its
+    // weight above baseline, lightening them.
+    float baseR, baseG, baseB;
+
+    if (colorSpace == CS_LOGC3)
+    {
+        baseR = 0.291954f; baseG = 0.823841f; baseB = -0.115795f;
+    }
+    else if (colorSpace == CS_LOGC4)
+    {
+        baseR = 0.254524f; baseG = 0.781478f; baseB = -0.036002f;
+    }
+    else if (colorSpace == CS_ACESCCT)
+    {
+        baseR = 0.266086f; baseG = 0.675968f; baseB = 0.057946f;
+    }
+    else if (colorSpace == CS_DWG)
+    {
+        baseR = 0.274119f; baseG = 0.873632f; baseB = -0.147750f;
+    }
+    else
+    {
+        baseR = 0.2126f; baseG = 0.7152f; baseB = 0.0722f;
+    }
+
+    float effGainR = baseR * (1.0f - gainR);
+    float effGainG = baseG * (1.0f - gainG);
+    float effGainB = baseB * (1.0f - gainB);
+
+    float grayLin = effGainR * linR + effGainG * linG + effGainB * linB;
+    float grayEncoded;
+
+    if (colorSpace == CS_LOGC3)
+        grayEncoded = lin_to_LogC3(grayLin);
+    else if (colorSpace == CS_LOGC4)
+        grayEncoded = lin_to_LogC4(grayLin);
+    else if (colorSpace == CS_ACESCCT)
+        grayEncoded = lin_to_ACEScct(grayLin);
+    else if (colorSpace == CS_DWG)
+        grayEncoded = lin_to_DI(grayLin);
+    else
+        grayEncoded = lin_to_Rec709(grayLin);
+
+    float mixAmt = desat / 100.0f;
+    float outR = p_R + (grayEncoded - p_R) * mixAmt;
+    float outG = p_G + (grayEncoded - p_G) * mixAmt;
+    float outB = p_B + (grayEncoded - p_B) * mixAmt;
+
+    return make_float3(outR, outG, outB);
+}
