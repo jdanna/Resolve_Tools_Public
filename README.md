@@ -122,6 +122,8 @@ Saturation tool with subtractive saturation and multi-format color space support
 ### `RL_DESAT.dctl`
 Creative desaturation that blends in a black & white copy of the image, with R/G/B controls that act like color filters used in black & white film photography.
 
+<img alt="RL_DESAT" src="assets/desat.png" />
+
 ### `TITLESAFE.dctl`
 Displays configurable safe area guides (action safe, title safe, center crosshair).
 
